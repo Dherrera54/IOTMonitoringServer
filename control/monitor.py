@@ -57,7 +57,7 @@ def analyze_data():
             alerts += 1
 
     print(len(aggregation), "dispositivos revisados")
-    print(alerts, "alertas enviadas ", datetime.now())
+    print(alerts, "alertas enviadas ")
 
 def analyze_data_max_temp():
     # Consulta todos los datos de la última hora, los agrupa por estación y variable
@@ -110,7 +110,7 @@ def analyze_data_max_temp():
             alerts += 1
 
     print(len(aggregation), "dispositivos revisados")
-    print(alerts, "alertas enviadas: ",message," --- ", datetime.now())
+    print(alerts, "alertas enviadas ")
 
 def on_connect(client, userdata, flags, rc):
     '''
