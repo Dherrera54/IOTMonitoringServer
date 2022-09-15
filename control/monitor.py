@@ -68,7 +68,7 @@ def analyze_data_max_temp():
 
     data = Data.objects.filter(
         base_time__gte=datetime.now() - timedelta(hours=0.05))
-    aggregation = data.annotate(check_value=Max('max_value')) \
+    aggregation = data.annotate(check_value=Avg('max_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
@@ -158,7 +158,7 @@ def start_cron():
     Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos.
     '''
     print("Iniciando cron analize data...")
-    schedule.every(5).minutes.do(analyze_data)
+    #schedule.every(5).minutes.do(analyze_data)
     print("Iniciando cron analize data max temp...")
     schedule.every(1).minutes.do(analyze_data_max_temp)
     print("Servicio de control iniciado")
