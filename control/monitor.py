@@ -160,8 +160,9 @@ def start_cron():
     print("Iniciando cron analize data...")
     #schedule.every(5).minutes.do(analyze_data)
     print("Iniciando cron analize data max temp...")
-    schedule.every(1).minutes.do(analyze_data_max_temp)
+    #schedule.every(1).minutes.do(analyze_data_max_temp)
     print("Servicio de control iniciado")
+    schedule.clear()
     while 1:
         schedule.run_pending()
         time.sleep(1)
