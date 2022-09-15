@@ -56,7 +56,7 @@ def analyze_data():
             alerts += 1
 
     print(len(aggregation), "dispositivos revisados")
-    print(alerts, "alertas enviadas")
+    print(alerts, "alertas enviadas ", datetime.now())
 
 
 def on_connect(client, userdata, flags, rc):
