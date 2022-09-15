@@ -1,6 +1,7 @@
 from argparse import ArgumentError
+from audioop import avg
 import ssl
-from django.db.models import Avg
+from django.db.models import Avg, Max
 from datetime import timedelta, datetime
 from receiver.models import Data, Measurement
 import paho.mqtt.client as mqtt
@@ -58,6 +59,58 @@ def analyze_data():
     print(len(aggregation), "dispositivos revisados")
     print(alerts, "alertas enviadas ", datetime.now())
 
+def analyze_data_max_temp():
+    # Consulta todos los datos de la última hora, los agrupa por estación y variable
+    # Compara el promedio con los valores límite que están en la base de datos para esa variable.
+    # Si el promedio se excede de los límites, se envia un mensaje de alerta.
+
+    print("Calculando alertas...")
+
+    data = Data.objects.filter(
+        base_time__gte=datetime.now() - timedelta(hours=0.05))
+    aggregation = data.annotate(check_value=Max('max_value')) \
+        .select_related('station', 'measurement') \
+        .select_related('station__user', 'station__location') \
+        .select_related('station__location__city', 'station__location__state',
+                        'station__location__country') \
+        .values('check_value', 'station__user__username',
+                'measurement__name',
+                'measurement__max_value',
+                'measurement__min_value',
+                'station__location__city__name',
+                'station__location__state__name',
+                'station__location__country__name')
+    alerts = 0
+    for item in aggregation:
+        alert = False
+
+        variable = item["measurement__name"]
+        max_value = item["measurement__max_value"] or 0
+        min_value = item["measurement__min_value"] or 0
+
+        country = item['station__location__country__name']
+        state = item['station__location__state__name']
+        city = item['station__location__city__name']
+        user = item['station__user__username']
+
+        if item["check_value"] > max_value or item["check_value"] < min_value:
+            alert = True
+
+        if alert:
+            message = "ALERT_MAX_TEMP {} {} {}".format(variable, min_value, max_value)
+            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+            print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
+            client.publish(topic, message)
+            alerts += 1
+        else:
+            message = "ALERT_TEMP_NORM {} {} {}".format(variable, min_value, max_value)
+            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
+            print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
+            client.publish(topic, message)
+            alerts += 1
+
+    print(len(aggregation), "dispositivos revisados")
+    print(alerts, "alertas enviadas: ",message," --- ", datetime.now())
 
 def on_connect(client, userdata, flags, rc):
     '''
@@ -104,8 +157,10 @@ def start_cron():
     '''
     Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos.
     '''
-    print("Iniciando cron...")
+    print("Iniciando cron analize data...")
     schedule.every(5).minutes.do(analyze_data)
+    print("Iniciando cron analize data max temp...")
+    schedule.every(1).minutes.do(analyze_data_max_temp)
     print("Servicio de control iniciado")
     while 1:
         schedule.run_pending()
