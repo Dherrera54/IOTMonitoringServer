@@ -97,13 +97,7 @@ def analyze_data_max_temp():
             alert = True
 
         if alert:
-            message = "ALERT_MAX_TEMP {} {} {}".format(variable, min_value, max_value)
-            topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
-            print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
-            client.publish(topic, message)
-            alerts += 1
-        else:
-            message = "ALERT_TEMP_NORM {} {} {}".format(variable, min_value, max_value)
+            message = "ALERT_MAX {} {}".format(variable, max_value)
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
             client.publish(topic, message)
