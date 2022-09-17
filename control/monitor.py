@@ -3,6 +3,8 @@ from audioop import avg
 import ssl
 from django.db.models import Avg, Max
 from datetime import timedelta, datetime
+
+from sqlalchemy import true
 from receiver.models import Data, Measurement
 import paho.mqtt.client as mqtt
 import schedule
@@ -59,15 +61,12 @@ def analyze_data():
     print(len(aggregation), "dispositivos revisados")
     print(alerts, "alertas enviadas ")
 
-def analyze_data_max_temp():
-    # Consulta todos las temperaturas del ultimo minuto, agrupa los valores por estación y variable
-    # Compara el promedio con los valores límite que están en la base de datos para esa variable.
-    # Si el promedio se excede de los límites, se envia un mensaje de alerta.
+def analyze_data_max():
 
     print("Calculando alertas...")
 
     data = Data.objects.filter(
-        base_time__gte=datetime.now() - timedelta(minutes=5))
+        base_time__gte=datetime.now() - timedelta(hours=1))
     aggregation = data.annotate(check_value=Max('max_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
@@ -81,6 +80,9 @@ def analyze_data_max_temp():
                 'station__location__state__name',
                 'station__location__country__name')
     alerts = 0
+    alertTemp=False
+    alertHum=False
+
     for item in aggregation:
         alert = False
 
@@ -93,10 +95,13 @@ def analyze_data_max_temp():
         city = item['station__location__city__name']
         user = item['station__user__username']
 
-        if (item["check_value"] > max_value or item["check_value"] < min_value)and variable=="temperatura":
-            alert = True
+        if (item["check_value"] > max_value or item["check_value"] < min_value):
+            if variable=="temperatura":
+                alertTemp = True
+            if variable=="humedad":
+                alertaHum=True
 
-        if alert:
+        if alertTemp and alertaHum:
             message = "ALERT_MAX {}".format(variable, max_value)
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
