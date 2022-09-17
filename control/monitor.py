@@ -101,7 +101,7 @@ def analyze_data_max():
                 alertHum=True
 
         if alertTemp and alertHum:
-            message = "ALERT_MAX {}".format(variable, max_value)
+            message = "ALERT_MAX!"
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
             client.publish(topic, message)
