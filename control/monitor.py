@@ -104,8 +104,8 @@ def analyze_data_max_temp():
             alerts += 1
        
 
-    print(len(aggregation), "dispositivos revisados en: {}, {}, {}".format(country, state, city))
-    print(alerts, "alerta enviadas - max temp a : {}".format(user))
+    print(len(aggregation), "dispositivos revisados")
+    print(alerts, "alerta enviadas - max temp")
 
 def on_connect(client, userdata, flags, rc):
     '''
