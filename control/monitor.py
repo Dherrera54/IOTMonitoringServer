@@ -4,7 +4,6 @@ import ssl
 from django.db.models import Avg, Max
 from datetime import timedelta, datetime
 
-from sqlalchemy import true
 from receiver.models import Data, Measurement
 import paho.mqtt.client as mqtt
 import schedule
@@ -99,9 +98,9 @@ def analyze_data_max():
             if variable=="temperatura":
                 alertTemp = True
             if variable=="humedad":
-                alertaHum=True
+                alertHum=True
 
-        if alertTemp and alertaHum:
+        if alertTemp and alertHum:
             message = "ALERT_MAX {}".format(variable, max_value)
             topic = '{}/{}/{}/{}/in'.format(country, state, city, user)
             print(datetime.now(), "Sending alert to {} {}".format(topic, variable))
@@ -160,7 +159,7 @@ def start_cron():
     print("Iniciando cron analize data...")
     #schedule.every(5).minutes.do(analyze_data)
     print("Iniciando cron analize data max temp...")
-    schedule.every(1).minutes.do(analyze_data_max_temp)
+    schedule.every(1).minutes.do(analyze_data_max)
     print("Servicio de control iniciado")
     #schedule.clear()
     while 1:
