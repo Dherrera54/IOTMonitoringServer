@@ -67,8 +67,8 @@ def analyze_data_max_temp():
     print("Calculando alertas...")
 
     data = Data.objects.filter(
-        base_time__gte=datetime.now() - timedelta(hours=1))
-    aggregation = data.annotate(check_value=Avg('avg_value')) \
+        base_time__gte=datetime.now() - timedelta(seconds=30))
+    aggregation = data.annotate(check_value=Max('max_value')) \
         .select_related('station', 'measurement') \
         .select_related('station__user', 'station__location') \
         .select_related('station__location__city', 'station__location__state',
@@ -104,8 +104,8 @@ def analyze_data_max_temp():
             alerts += 1
        
 
-    print(len(aggregation), "dispositivos revisados")
-    print(alerts, "alertas enviadas - max temp ")
+    print(len(aggregation), "dispositivos revisados en: {}, {}, {}".format(country, state, city))
+    print(alerts, "alerta enviadas - max temp a : {}".format(user))
 
 def on_connect(client, userdata, flags, rc):
     '''
