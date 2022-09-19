@@ -83,7 +83,6 @@ def analyze_data_max():
     alertHum=False
 
     for item in aggregation:
-        alert = False
 
         variable = item["measurement__name"]
         max_value = item["measurement__max_value"] or 0
@@ -109,7 +108,7 @@ def analyze_data_max():
        
 
     print(len(aggregation), "dispositivos revisados")
-    print(alerts, "alerta enviadas - max temp")
+    print(alerts, "alerta enviadas - Alert_max")
 
 def on_connect(client, userdata, flags, rc):
     '''
@@ -154,11 +153,12 @@ def setup_mqtt():
 
 def start_cron():
     '''
-    Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos.
+    Inicia el cron que se encarga de ejecutar la función analyze_data cada 5 minutos 
+    y la funcion analyze_data_max cada minuto.
     '''
     print("Iniciando cron analize data...")
     schedule.every(5).minutes.do(analyze_data)
-    print("Iniciando cron analize data max temp...")
+    print("Iniciando cron analize data max...")
     schedule.every(1).minutes.do(analyze_data_max)
     print("Servicio de control iniciado")
     #schedule.clear()
